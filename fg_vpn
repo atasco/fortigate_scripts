@@ -1,0 +1,124 @@
+#!/usr/bin/expect -f
+
+# —————-                                               -————— #
+# by aH - 2014												  #
+# Modifications:											  #
+#	31/10/2014 - Creation									  #
+#															  #
+# —————-                                               -————— #
+
+# —————- configuration —————- #
+
+set timeout 9
+set send_slow {10 .001}
+log_user 0
+
+set username admin
+set hostname fortigate
+
+catch {exec date +%d%m%y} current_date
+catch {exec date +%H%M} current_hour
+
+set cfg_dir ./etc
+set log_dir ./logs
+
+log_file -a $log_dir/$current_date.log
+
+# —————- check passed parameters —————- #
+
+if {[llength $argv] < 3} {
+	send_user "\nERROR: Faltan Argumentos\n"
+	send_user "========================\n"
+	send_user "USO:        fg_vpn <VPN> <ACTIVACION> <KEY>\n\n"
+	send_user "VPN:        IDENTIFICADOR de la VPN\n"
+	send_user "ACTIVACION: ON o OFF\n"
+	send_user "KEY:        LLAVE de CIFRADO\n"
+	send_user "\n"
+	exit 1
+}
+
+if { [lindex $argv 0] ne "" } {
+		set vpnid [lindex $argv 0]
+	} else {
+		send_user "\nERROR: Argumentos Erroneos\n"
+		send_user "==========================\n"
+		send_user "VPN NO VALIDA\n"
+		send_user "\n"
+		exit 1
+}
+
+if { [lindex $argv 1] eq "ON" } {
+		set status enable
+		set flag HABILITADA
+	} elseif { [lindex $argv 1] eq "OFF" } {
+		set status disable
+		set flag DESHABILITADA
+	} else {
+		send_user "\nERROR: Argumentos Erroneos\n"
+		send_user "==========================\n"
+		send_user "MODO DE ACTIVACION INCORRECTO\n"
+		send_user "\n"
+		exit 1
+}
+
+if { [lindex $argv 2] ne "" } {
+		set key [lindex $argv 2]
+	} else {
+		send_user "\nERROR: Argumentos Erroneos\n"
+		send_user "==========================\n"
+		send_user "KEY NO VALIDA\n"
+		send_user "\n"
+		exit 1
+}
+
+# ————– password decrypt ————– #
+
+proc password_decrypt filename {
+	global key
+	catch {exec openssl des3 -d -salt -in $filename -k $key} dpd
+	return $dpd
+}
+
+# ————– ssh login ————– #
+
+send_log "### /START-SESSION/ IP: $hostname @ [exec date] ###\n\n"
+
+set password [password_decrypt $cfg_dir/fgpd.enc]
+
+spawn ssh -q -o StrictHostKeyChecking=no $username@$hostname
+
+expect {
+  timeout { send_user "\nTimeout SSH\n"; exit 1 }
+  eof { send_user "\nFallo SSH para $hostname\n"; exit 1 }
+  "*assword:" { send "$password\r" }
+}
+
+# ————– vpn policy change ————– #
+
+set fp [open $cfg_dir/$vpnid r]
+
+while {[gets $fp policyid] != -1} {
+  expect "* #"
+  send "config firewall policy\r"
+  expect "*(policy) #"
+  send "edit $policyid\r"
+  expect "*($policyid) #"
+  send "set status $status\r"
+  expect "*($policyid) #"
+  send "end\r"
+  expect "* #"    
+}
+
+close $fp
+
+# ————– script data return ————– #
+
+send "exit\r"
+
+send_user "\nVPN $vpnid $flag\n\n"
+
+close
+
+send_log "### /END-SESSION/ IP: $hostname @ [exec date] ###\n"
+
+# EOF
