@@ -1,4 +1,4 @@
-# Script para la activar/desactivar políticas asociadas a VPNs
+# Script para activar/desactivar políticas asociadas a VPNs
 
 ## Uso
 
@@ -18,7 +18,7 @@ Donde:
 
 > Por ejemplo, para la *VPN UNO* (VPN_UNO):
 >  
->  345
+>  345    
 >  543
 
 * PASSWORD CIFRADA: Fichero con la password cifrada `fgpd.enc`.
@@ -27,10 +27,10 @@ Se guardan en el subdirectorio `etc` ubicado en el directorio desde el que se la
 
 ## Cifrado de passwords
 
-Para cifrar la password, guardada en texto plano en un fichero (password.dec):
+Para cifrar la password, guardada en texto plano en un fichero (fgpd.dec):
 
 ``` sh
-$ openssl des3 -salt -in password.dec -out password.enc
+$ openssl des3 -salt -in fgpd.dec -out fgpd.enc
 enter des-ede3-cbc encryption password:
 Verifying - enter des-ede3-cbc encryption password:
 ```
