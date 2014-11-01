@@ -47,9 +47,9 @@ vi /etc/logrotate.d/fg_vpn
 
 con el contenido:
 
-><DIRECTORIO_LOGS>/*log {
->    rotate 14
->    daily
->    compress
->    create 0755 root root
+><DIRECTORIO_LOGS>/*log {    
+>    rotate 14    
+>    daily    
+>    compress    
+>    create 0755 root root    
 >}
