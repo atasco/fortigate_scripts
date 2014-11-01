@@ -1,4 +1,4 @@
-# Script para activar/desactivar políticas asociadas a VPNs
+# Expect script para activar/desactivar políticas asociadas a VPNs
 
 ## Uso
 
@@ -36,3 +36,20 @@ Verifying - enter des-ede3-cbc encryption password:
 ```
 
 La *KEY* que pasamos al script es la `des-ede3-cbc encryption password` que se solicita en el comando anterior.
+
+## Rotado de logs
+
+Para evitar la acumulación de logs se puede hacer uso *logrotate*:
+
+``` sh
+vi /etc/logrotate.d/fg_vpn
+```
+
+con el contenido:
+
+><DIRECTORIO_LOGS>/*log {
+>    rotate 14
+>    daily
+>    compress
+>    create 0755 root root
+>}

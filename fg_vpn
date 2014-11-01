@@ -4,25 +4,23 @@
 # by aH - 2014												  #
 # Modifications:											  #
 #	31/10/2014 - Creation									  #
+#	01/11/2014 - Change log_file to work with logrotate       #
 #															  #
 # —————-                                               -————— #
 
 # —————- configuration —————- #
 
-set timeout 9
-set send_slow {10 .001}
-log_user 0
-
 set username admin
 set hostname fortigate
 
-catch {exec date +%d%m%y} current_date
-catch {exec date +%H%M} current_hour
-
 set cfg_dir ./etc
 set log_dir ./logs
+set log_name fg_vpn.log
+log_file -a $log_dir/$log_name
 
-log_file -a $log_dir/$current_date.log
+set timeout 9
+set send_slow {10 .001}
+log_user 0
 
 # —————- check passed parameters —————- #
 
