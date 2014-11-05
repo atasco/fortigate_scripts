@@ -1,26 +1,29 @@
 #!/usr/bin/expect -f
 
 # —————-                                               -————— #
-# by aH - 2014												  #
-# Modifications:											  #
-#	31/10/2014 - Creation									  #
-#	01/11/2014 - Change log_file to work with logrotate       #
-#															  #
+# by aH - 2014                                                #
+#                                                             #
 # —————-                                               -————— #
 
 # —————- configuration —————- #
 
 set username admin
 set hostname fortigate
+set fgpd fgpd.enc
 
 set cfg_dir ./etc
 set log_dir ./logs
 set log_name fg_vpn.log
-log_file -a $log_dir/$log_name
+
+exp_internal 0
+log_user 0
+
+# —————- don't change below here —————- #
+
+set enc_fgpd $cfg_dir/$fgpd
 
 set timeout 9
 set send_slow {10 .001}
-log_user 0
 
 # —————- check passed parameters —————- #
 
@@ -79,9 +82,7 @@ proc password_decrypt filename {
 
 # ————– ssh login ————– #
 
-send_log "### /START-SESSION/ IP: $hostname @ [exec date] ###\n\n"
-
-set password [password_decrypt $cfg_dir/fgpd.enc]
+set password [password_decrypt $enc_fgpd]
 
 spawn ssh -q -o StrictHostKeyChecking=no $username@$hostname
 
@@ -103,20 +104,24 @@ while {[gets $fp policyid] != -1} {
   expect "*($policyid) #"
   send "set status $status\r"
   expect "*($policyid) #"
-  send "end\r"
-  expect "* #"    
+  send "end\r" 
 }
 
 close $fp
 
-# ————– script data return ————– #
+expect {
+"* #" { send "exit\r" }
+}
 
-send "exit\r"
+# ————– logging and script data return ————– #
 
-send_user "\nVPN $vpnid $flag\n\n"
+send_user "\nVPN $vpnid $flag\n"
+
+log_file -a $log_dir/$log_name
+send_log "### /START-SESSION/ IP: $hostname @ [exec date] ###\n"
+send_log "VPN $vpnid $flag\n"
+send_log "### /END-SESSION/ IP: $hostname @ [exec date] #####\n\n"
 
 close
-
-send_log "### /END-SESSION/ IP: $hostname @ [exec date] ###\n"
 
 # EOF
