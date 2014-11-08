@@ -20,7 +20,7 @@ Ajustar los siguientes parámetros:
 
 * username: Cuenta de usuario con permisos de administración (por defecto *admin*). 
 * hostname: Nombre de host o IP del FortiGate (por defecto *fortigate*).
-* fgpd: Nonbre del fichero con la password cifrada del usuario (por defecto *fgpd.enc*).
+* fgpd: Nombre del fichero con la password cifrada del usuario (por defecto *fgpd.enc*).
 * cfg_dir: Directorio donde se encuentran los ficheros de configuración (por defecto *./etc*).
 * log_dir: Directorio donde se guardarán los ficheros de log (por defecto *./logs*).
 * log_name: Nombre del fichero de log (por defecto *fg_vpn.log*).
